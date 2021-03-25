@@ -30,14 +30,9 @@ steps:
   - script: |
       python -m pip install --upgrade pip
       pip install -r requirements.txt
-      pip install .
     displayName: "Install dependencies"
 
   - script: |
       black --check .
       mypy .
     displayName: "Lint"
-
-  - script: |
-      pytest
-    displayName: "pytest"
