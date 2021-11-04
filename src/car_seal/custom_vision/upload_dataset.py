@@ -1,7 +1,6 @@
 import argparse
 import os
 
-import cv2
 from azure.cognitiveservices.vision.customvision.training import (
     CustomVisionTrainingClient,
 )
@@ -12,6 +11,7 @@ from azure.cognitiveservices.vision.customvision.training.models import (
     Region,
     Tag,
 )
+from car_seal.custom_vision.reader import read_and_resize_image
 from dotenv import load_dotenv
 from msrest.authentication import ApiKeyCredentials
 from numpy import cbrt
@@ -79,18 +79,6 @@ class UploadDataset:
 
         return self.trainer.create_tag(self.project.id, tag_name)
 
-    def _read_and_resize_image(self, image_path: str) -> bytes:
-        image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
-        current_byte_size = len(cv2.imencode(".jpg", image)[1].tobytes())
-        if current_byte_size > self.max_byte_size:
-            scale_factor: int = int(cbrt(self.max_byte_size / current_byte_size) * 95)
-            encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), scale_factor]
-            image_bytes = cv2.imencode(".jpg", image, encode_param)[1].tobytes()
-        else:
-            image_bytes = cv2.imencode(".jpg", image)[1].tobytes()
-
-        return image_bytes
-
     def _read_annotation_file(self, annotation_path: str) -> list:
         annotations = []
         with open(annotation_path, "r") as f:
@@ -130,7 +118,7 @@ class UploadDataset:
         return annotations
 
     def main(self) -> None:
-        dataset_path = os.path.join(os.path.dirname(__file__), "../dataset")
+        dataset_path = os.path.join(os.path.dirname(__file__), "../../../dataset")
 
         existing_image_count = self.trainer.get_image_count(project_id=self.project.id)
         file_number = existing_image_count
@@ -144,8 +132,9 @@ class UploadDataset:
                     dataset_path, "annotations", file_name + ".txt"
                 ),
             )
-            image_bytes: bytes = self._read_and_resize_image(
+            image_bytes: bytes = read_and_resize_image(
                 image_path=os.path.join(dataset_path, "images", file_name + ".JPG"),
+                max_byte_size=self.max_byte_size,
             )
             print(f"Image {file_name} is {len(image_bytes)} bytes")
             tagged_images_with_regions.append(
@@ -174,13 +163,13 @@ if __name__ == "__main__":
 
     txt_file_paths = []
     with open(
-        os.path.join(os.path.dirname(__file__), "../dataset/train.txt"), "r"
+        os.path.join(os.path.dirname(__file__), "../../../dataset/train.txt"), "r"
     ) as f:
         for line in f:
             line = line.strip()
             txt_file_paths.append(line)
     with open(
-        os.path.join(os.path.dirname(__file__), "../dataset/validation.txt"), "r"
+        os.path.join(os.path.dirname(__file__), "../../../dataset/validation.txt"), "r"
     ) as f:
         for line in f:
             line = line.strip()
