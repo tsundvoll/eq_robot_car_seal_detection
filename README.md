@@ -19,4 +19,5 @@ python main.py --help
 - Place the dataset to be uploaded into dataset folder. The images needs to be placed in a
 folder called images and the annotations in a folder called annotations.
 - Update the test, train and validation files if desired.
+- Install the repository using `pip install -e .`
 - Run the upload_dataset.py file to upload the dataset to a custom vision project.
