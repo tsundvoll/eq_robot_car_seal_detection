@@ -1,0 +1,20 @@
+{
+  "scriptFile": "__init__.py",
+  "bindings": [
+    {
+      "name": "myblob",
+      "type": "blobTrigger",
+      "direction": "in",
+      "path": "mission-reports/{name}",
+      "connection": "Storage"
+    },
+    {
+      "name": "inputblob",
+      "type": "blob",
+      "dataType": "binary",
+      "path": "{blobTrigger}",
+      "connection": "Storage",
+      "direction": "in"
+    }
+  ]
+}
